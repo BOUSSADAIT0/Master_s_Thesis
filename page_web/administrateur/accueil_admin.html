@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Espace Administrateur</title>
+    <!-- Inclusion de Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="admin_style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="#doctors">Médecins</a></li>
+                <li><a href="#nurses">Infirmiers</a></li>
+                <li><a href="#patients">Patients</a></li>
+                <li><a href="inscription.html">Ajouter un nouveau utilisateur</a></li>
+                <li><button id="logout-button" class="btn btn-danger">Déconnexion</button></li>
+            </ul>
+        </nav>
+    </header>
+    <section id="doctors" class="data-box">
+        <h2>Médecins <button id="add-doctor-btn" class="btn btn-primary">+</button></h2>
+        <form id="doctor-form" style="display: none;">
+            <input type="text" name="nom" placeholder="Nom" required>
+            <input type="text" name="prenom" placeholder="Prénom" required>
+            <input type="email" name="email" placeholder="Email" required>
+            <input type="phone" name="phone" placeholder="Numéro de téléphone" required>
+            <select name="service" required>
+                <option value="" disabled selected>Sélectionnez une journer</option>
+                <option value="dimanche">Dimanche</option>
+                <option value="lundi">Lundi</option>
+                <option value="mardi">Mardi</option>
+                <option value="mercredi">Mercredi</option>
+               <option value="jeudi">Jeudi</option>
+                <option value="vendredi">Vendredi</option>
+               <option value="samedi">Samedi</option>
+                <!-- Add other options as needed -->
+            </select>
+            <input type="password" name="password" placeholder="Mot de passe" required>
+            <button type="submit" class="btn btn-success">Ajouter</button>
+        </form>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Prénom</th>
+                    <th>Email</th>
+                    <th>Numéro de téléphone</th>
+                    <th>Service</th>
+                    <th>Mot de passe</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Les données des médecins seront ajoutées ici dynamiquement -->
+            </tbody>
+        </table>
+    </section>
+    <section id="nurses" class="data-box">
+        <h2>Infirmiers <button id="add-nurse-btn" class="btn btn-primary">+</button></h2>
+        <form id="nurse-form" style="display: none;">
+            <input type="text" name="nom" placeholder="Nom" required>
+            <input type="text" name="prenom" placeholder="Prénom" required>
+            <input type="email" name="email" placeholder="Email" required>
+            <input type="phone" name="phone" placeholder="Numéro de téléphone" required>
+            <select name="service" required>
+                <option value="" disabled selected>Sélectionnez une journer</option>
+                <option value="dimanche">Dimanche</option>
+                <option value="lundi">Lundi</option>
+                <option value="mardi">Mardi</option>
+                <option value="mercredi">Mercredi</option>
+               <option value="jeudi">Jeudi</option>
+                <option value="vendredi">Vendredi</option>
+               <option value="samedi">Samedi</option>
+                <!-- Add other options as needed -->
+            </select>
+            <input type="password" name="password" placeholder="Mot de passe" required>
+            <button type="submit" class="btn btn-success">Ajouter</button>
+        </form>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Prénom</th>
+                    <th>Email</th>
+                    <th>Numéro de téléphone</th>
+                    <th>Journée</th>
+                    <th>Mot de passe</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Les données des infirmiers seront ajoutées ici dynamiquement -->
+            </tbody>
+        </table>
+    </section>
+    <section id="patients" class="data-box">
+        <h2>Patients</h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Prénom</th>
+                    <th>Date d'Hospitalisation</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Les données des patients seront ajoutées ici dynamiquement -->
+            </tbody>
+        </table>
+    </section>
+
+    
+
+    <!-- Modal Bootstrap -->
+    <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editModalLabel">Modifier Entrée</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="editForm">
+                        <input type="hidden" name="edit-id">
+                        <input type="hidden" name="edit-type">
+                        <div class="form-group">
+                            <label for="edit-nom">Nom</label>
+                            <input type="text" class="form-control" name="edit-nom" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-prenom">Prénom</label>
+                            <input type="text" class="form-control" name="edit-prenom" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-email">Email</label>
+                            <input type="email" class="form-control" name="edit-email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-phone">Numéro de téléphone</label>
+                            <input type="tel" class="form-control" name="edit-phone" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-service">journée de travail</label>
+                            <select class="form-control" name="edit-service" required>
+                                <option value="" disabled selected>Sélectionnez une journer</option>
+                                <option value="dimanche">Dimanche</option>
+                                <option value="lundi">Lundi</option>
+                                <option value="mardi">Mardi</option>
+                                <option value="mercredi">Mercredi</option>
+                                <option value="jeudi">Jeudi</option>
+                                <option value="vendredi">Vendredi</option>
+                                <option value="samedi">Samedi</option>
+                                <!-- Add other options as needed -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-password">Mot de passe</label>
+                            <input type="password" class="form-control" name="edit-password" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-date_hospitalisation">Date d'Hospitalisation</label>
+                            <input type="date" class="form-control" name="edit-date_hospitalisation">
+                        </div>
+                        <button type="button" class="btn btn-primary" onclick="saveChanges()">Enregistrer</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inclusion de Bootstrap JS et des dépendances -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDoctors();
+            loadNurses();
+            loadPatients();
+
+            document.getElementById('logout-button').addEventListener('click', () => {
+    window.location.href = 'http://127.0.0.1:5500/page%20web/page%20daccueil/index.html';
+});
+
+
+            document.getElementById('add-doctor-btn').addEventListener('click', () => {
+                document.getElementById('doctor-form').style.display = 'block';
+            });
+
+            document.getElementById('add-nurse-btn').addEventListener('click', () => {
+                document.getElementById('nurse-form').style.display = 'block';
+            });
+
+            const doctorForm = document.getElementById('doctor-form');
+            const nurseForm = document.getElementById('nurse-form');
+
+            doctorForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                addPerson(doctorForm, 'medecins');
+            });
+
+            nurseForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                addPerson(nurseForm, 'infermiers');
+            });
+        });
+
+        async function loadDoctors() {
+            loadData('#doctors tbody', 'medecins');
+        }
+
+        async function loadNurses() {
+            loadData('#nurses tbody', 'infermiers');
+        }
+
+        async function loadPatients() {
+            loadData('#patients tbody', 'patients');
+        }
+
+        async function loadData(selector, collectionName) {
+            const table = document.querySelector(selector);
+            try {
+                const response = await fetch(`http://127.0.0.1:3000/${collectionName}`);
+                const data = await response.json();
+                table.innerHTML = '';
+                data.forEach(item => {
+                    const row = table.insertRow();
+                    if (collectionName === 'patients') {
+                        row.innerHTML = `
+                            <td>${item.nom}</td>
+                            <td>${item.prenom}</td>
+                            <td>${new Date(item.date_hospitalisation).toLocaleDateString()}</td>
+                            <td><button class="btn btn-primary" onclick="showEditModal('${item._id}', '${item.nom}', '${item.prenom}', '', '', '', '${item.date_hospitalisation}', '', 'patients')">Modifier</button></td>
+                        `;
+                    } else {
+                        row.innerHTML = `
+                            <td>${item.nom}</td>
+                            <td>${item.prenom}</td>
+                            <td>${item.email}</td>
+                            <td>${item.phone}</td>
+                            <td>
+                                <select disabled>
+                                    <option value="dimanche" ${item.service === 'dimanche' ? 'selected' : ''}>dimanche</option>
+                                    <option value="lundi" ${item.service === 'lundi' ? 'selected' : ''}>lundi</option>
+                                    <option value="mardi" ${item.service === 'mardi' ? 'selected' : ''}>mardi</option>
+                                    <option value="mercredi" ${item.service === 'mercredi' ? 'selected' : ''}>mercredi</option>
+                                    <option value="jeudi" ${item.service === 'jeudi' ? 'selected' : ''}>jeudi</option>
+                                    <option value="vendredi" ${item.service === 'vendredi' ? 'selected' : ''}>vendredi</option>
+                                    <option value="samedi" ${item.service === 'samedi' ? 'selected' : ''}>samedi</option>
+                                    <!-- Add other options as needed -->
+                                </select>
+                            </td>
+                            <td><input type="password" value="${item.password}" disabled></td>
+                            <td><button class="btn btn-primary" onclick="showEditModal('${item._id}', '${item.nom}', '${item.prenom}', '${item.email}', '${item.phone}', '${item.service}', '${item.password}', '', '${collectionName}')">Modifier</button></td>
+                        `;
+                    }
+                });
+            } catch (error) {
+                console.error('Erreur lors du chargement des données:', error);
+            }
+        }
+
+        async function addPerson(form, collectionName) {
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            try {
+                const response = await fetch(`http://127.0.0.1:3000/${collectionName}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                if (response.ok) {
+                    alert('Ajouté avec succès!');
+                    form.reset();
+                    form.style.display = 'none';
+                    if (collectionName === 'medecins') {
+                        loadDoctors();
+                    } else if (collectionName === 'infermiers') {
+                        loadNurses();
+                    }
+                } else {
+                    const error = await response.text();
+                    alert('Erreur : ' + error);
+                }
+            } catch (error) {
+                console.error('Erreur lors de l\'ajout:', error);
+                alert('Erreur : ' + error.message);
+            }
+        }
+
+        function showEditModal(id, nom, prenom, email, phone, service, password, date_hospitalisation, type) {
+            const editForm = document.getElementById('editForm');
+            editForm['edit-id'].value = id;
+            editForm['edit-type'].value = type;
+            editForm['edit-nom'].value = nom;
+            editForm['edit-prenom'].value = prenom;
+            editForm['edit-email'].value = email;
+            editForm['edit-phone'].value = phone;
+            editForm['edit-service'].value = service;
+            editForm['edit-password'].value = password;
+            editForm['edit-date_hospitalisation'].value = date_hospitalisation || '';
+
+            if (type === 'patients') {
+                editForm['edit-date_hospitalisation'].parentElement.style.display = 'block';
+                editForm['edit-email'].parentElement.style.display = 'none';
+                editForm['edit-phone'].parentElement.style.display = 'none';
+                editForm['edit-service'].parentElement.style.display = 'none';
+                editForm['edit-password'].parentElement.style.display = 'none';
+            } else {
+                editForm['edit-date_hospitalisation'].parentElement.style.display = 'none';
+                editForm['edit-email'].parentElement.style.display = 'block';
+                editForm['edit-phone'].parentElement.style.display = 'block';
+                editForm['edit-service'].parentElement.style.display = 'block';
+                editForm['edit-password'].parentElement.style.display = 'block';
+            }
+
+            $('#editModal').modal('show');
+        }
+
+        async function saveChanges() {
+            const editForm = document.getElementById('editForm');
+            const id = editForm['edit-id'].value;
+            const type = editForm['edit-type'].value;
+            const nom = editForm['edit-nom'].value;
+            const prenom = editForm['edit-prenom'].value;
+            const email = editForm['edit-email'].value;
+            const phone = editForm['edit-phone'].value;
+            const service = editForm['edit-service'].value;
+            const password = editForm['edit-password'].value;
+            const date_hospitalisation = editForm['edit-date_hospitalisation'].value;
+
+            let body = {};
+            if (type === 'patients') {
+                body = { nom, prenom, date_hospitalisation };
+            } else {
+                body = { nom, prenom, email, phone, service, password };
+            }
+
+            try {
+                const response = await fetch(`http://127.0.0.1:3000/${type}/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(body)
+                });
+
+                if (response.ok) {
+                    alert('Modifié avec succès.');
+                    $('#editModal').modal('hide');
+                    if (type === 'patients') {
+                        loadPatients();
+                    } else if (type === 'medecins') {
+                        loadDoctors();
+                    } else if (type === 'infermiers') {
+                        loadNurses();
+                    }
+                } else {
+                    const error = await response.text();
+                    alert('Erreur : ' + error);
+                }
+            } catch (error) {
+                console.error('Erreur lors de la modification :', error);
+                alert('Erreur : ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

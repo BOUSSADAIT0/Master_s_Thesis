@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jour actuel</title>
+</head>
+<body>
+
+<button onclick="afficherJour()">Afficher le jour actuel</button>
+<p id="resultat"></p>
+
+<script>
+function afficherJour() {
+    // Créer un objet Date pour obtenir la date actuelle
+    let date = new Date();
+    
+    // Tableau des noms des jours de la semaine
+    let jours = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+    
+    // Récupérer le jour de la semaine (0 pour Dimanche, 1 pour Lundi, etc.)
+    let jourActuel = jours[date.getDay()];
+    
+    // Afficher le résultat dans le paragraphe avec id="resultat"
+    document.getElementById('resultat').textContent = "Aujourd'hui, c'est " + jourActuel;
+}
+</script>
+
+</body>
+</html>
