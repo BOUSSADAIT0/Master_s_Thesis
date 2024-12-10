@@ -1,0 +1,106 @@
+{
+    "medecin": {
+      "actions": ["connecter_soncompte_medecin","permettre_sortie_patient","voir_donnees_capteurs","ecrire_observation","donner_medicament_a_faire"],
+      "donnees_surveiller": ["ecg","pression_arterielle","saturation_oxygene","temperature_du_corps","frequence_respiratoire",
+      "camera_surveillance","temperature_du_salle"],
+      "donnees": {
+        "nom": "string",
+        "prenom": "string",
+        "id_medecin": "string",
+        "specialisation": "string",
+        "email": "string",
+        "numero_telephone": "string"
+      }
+    },
+
+    "infirmier": {
+      "actions": ["connecter_soncompte_infermier","ajouter_patient","entrer_pression_arterielle_patient","voir_donnees_capteurs",
+      "lancer_appel_urgence","valider_prise_medicament", "voir_medicaments_prescrit"  ],
+      "donnees_surveiller": ["ecg","pression_arterielle","saturation_oxygene","temperature","camera_surveillance",
+        "frequence_respiratoire"],
+      "donnees": {
+        "nom": "string",
+        "prenom": "string",
+        "id_infirmier": "string",
+        "email": "string",
+        "numero_telephone": "string"
+      }
+    },
+
+
+    "administrateur": {
+      "actions": ["ajouter_supprimer_medecin","ajouter_supprimer_infirmier","voir_nombre_patients_salle_reanimation",
+        "voir_cout_medicaments","modification_information_en_cas_erreur(nom,prenom,motdepasse,gmail)"],
+      "donnees": {
+        "nom": "string",
+        "prenom": "string",
+        "id_administrateur": "string",
+        "email": "string",
+        "numero_telephone": "string"
+      }
+    },
+
+
+    "patient": {
+      "actions": ["etre_hospitalise" ],
+      "donnees": {
+        "nom": "string",
+        "prenom": "string",
+        "date_naissance": "date",
+        "genre": "string",
+        "lit": "string",
+        "hospitalisations": [
+          {
+            "date_admission": "date",
+            "date_sortie": "date",
+            "medicaments": [
+              { 
+                "nom": "string",
+                "cout": "number",
+                "dose": "number"
+              }
+            ],
+            "donnees_capteurs": {
+              "ecg": "string",
+              "pression_arterielle": "number",
+              "saturation_oxygene": "number",
+              "temperature": "number",
+              "camera_surveillance": "string",
+              "frequence_respiratoire": "number"
+            }
+          }
+        ]
+      }
+    },
+
+    "alerte":{
+      "informations_patient": {
+        "nom": "string",
+        "prenom": "string",
+        "date_naissance": "date",
+        "genre": "string",
+        "lit": "string"
+      },
+
+      "situation_actuelle": {
+        "raison_de_ladmission": "string",
+        "etat": [
+          "Fièvre élevée",
+          "frequence respiratoire faible",
+          "des exemple"
+        ]
+      },
+
+      "signes_vitaux": {
+        "fréquence_cardiaque": "50 bpm",
+        "tension_artérielle": "90/60 mmHg",
+        "fréquence_respiratoire": "10/min",
+        "saturation_en_oxygène": "88% en air ambiant",
+        "température_corporelle": "39.2°C"
+      }
+    }
+
+
+
+  }
+  

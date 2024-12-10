@@ -1,0 +1,48 @@
+body, html {
+    height: 100%;  /* Assure que le <body> et <html> prennent toute la hauteur de la fenêtre du navigateur */
+    margin: 0;     /* Supprime les marges par défaut */
+    padding: 0;    /* Supprime les paddings par défaut */
+    font-family: 'Arial', sans-serif; /* Définit la police par défaut */
+}
+
+body {
+    background: url('1.jpg') no-repeat center center fixed; /* Place l'image de fond */
+    background-size: cover; /* Ajuste l'image pour couvrir entièrement l'espace disponible */
+    display: flex; /* Utilise Flexbox pour aligner le contenu */
+    align-items: center; /* Centre verticalement le contenu dans le conteneur */
+    justify-content: center; /* Centre horizontalement le contenu */
+}
+
+.welcome-container {
+    text-align: center; /* Centre le texte horizontalement */
+    color: #fff; /* Couleur du texte en blanc pour contraste */
+    padding: 20px; /* Ajoute un peu d'espace autour du texte */
+    background: rgba(0, 0, 0, 0.5); /* Ajoute un fond semi-transparent noir pour une meilleure lisibilité */
+    border-radius: 10px; /* Adoucit les coins du conteneur */
+}
+
+.blink {
+    animation: blinker 1s linear infinite; /* Applique l'animation clignotante */
+    font-size: 2em; /* Taille du texte */
+}
+
+@keyframes blinker {
+    50% { opacity: 0; } /* Rend le texte transparent à mi-chemin de chaque cycle d'animation */
+}
+
+.button-container button {
+    margin: 10px;
+    padding: 10px 20px;
+    font-size: 1em;
+    cursor: pointer;
+    background-color: #007BFF; /* Couleur de fond des boutons */
+    color: white; /* Texte des boutons en blanc */
+    border: none; /* Pas de bordure */
+    border-radius: 5px; /* Bordures arrondies */
+    transition: background-color 0.3s, transform 0.2s; /* Transition douce lors du survol et effet de transformation */
+}
+
+.button-container button:hover {
+    background-color: #0056b3; /* Changement de couleur lors du survol */
+    transform: scale(1.05); /* Légère augmentation de taille pour un effet de survol dynamique */
+}
