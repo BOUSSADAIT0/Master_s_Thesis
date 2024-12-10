@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Espace Medecin</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f8f8;
+        }
+        header {
+            background-color: #333;
+            color: white;
+            padding: 10px 0;
+            text-align: center;
+        }
+        nav ul {
+            margin: 0;
+            padding: 0;
+            list-style-type: none;
+        }
+        nav ul li {
+            display: inline-block;
+            margin-right: 20px;
+        }
+        nav ul li button {
+            background-color: #333;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        nav ul li button:hover {
+            background-color: #555;
+        }
+        section {
+            margin: 20px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(82, 81, 81, 0.1);
+        }
+        h2 {
+            margin-top: 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #333;
+            color: white;
+        }
+        .actions {
+            display: flex;
+            gap: 5px;
+        }
+        button.action-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button.action-btn:hover {
+            background-color: #45a049;
+        }
+        button.exit-btn {
+            background-color: #008CBA;
+        }
+        button.exit-btn:hover {
+            background-color: #007bb5;
+        }
+        #view-images-button {
+            background-color: #FFA500;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        #view-images-button:hover {
+            background-color: #e69500;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><button id="logout-button">Déconnexion</button></li>
+            </ul>
+        </nav>
+    </header>
+    <section id="patients" class="data-box">
+        <button id="view-images-button">Voir Images Capturées</button>
+        <h2>Patients</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Prénom</th>
+                    <th>Date de Naissance</th>
+                    <th>Numéro de lit</th>
+                    <th>Date d'Hospitalisation</th>
+                    <th>Etat de patient</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="patients-table">
+                <!-- Les données des patients seront ajoutées ici dynamiquement -->
+            </tbody>
+        </table>
+    </section>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+
+            document.getElementById('logout-button').addEventListener('click', () => {
+                // Ajoutez ici la logique de déconnexion (par exemple, supprimer le token JWT)
+                window.location.href = '../index.html';
+            });
+
+            // ######   affichage des photos captrer    #######
+
+            document.getElementById('view-images-button').addEventListener('click', () => {
+                window.location.href = 'http://127.0.0.1:5005/';
+            });
+        });
+
+        async function loadPatients() {
+            const table = document.getElementById('patients-table');
+            try {
+                const response = await fetch('http://localhost:3000/patients');
+                const patients = await response.json();
+                table.innerHTML = '';
+                patients.forEach((patient) => {
+                    const row = table.insertRow();
+                    row.innerHTML = `
+                        <td>${patient.nom}</td>
+                        <td>${patient.prenom}</td>
+                        <td>${patient.date_naissance}</td>
+                        <td>${patient.bed_number || ''}</td>
+                        <td>${patient.date_hospitalisation}</td>
+                        <td>Etat normal</td>
+                        <td class="actions">
+                            <button class="action-btn view-video-btn" data-bed-number="${patient.bed_number}">Voir Vidéo</button>
+                            <button class="action-btn details-btn" data-bed-number="${patient.bed_number}">Détails</button>
+                            <button class="action-btn history-btn" data-id-patient="${patient.id}" data-bed-number="${patient.bed_number}">Voir Historique</button>
+                            <button class="action-btn exit-btn" data-id-patient="${patient.id}" data-bed-number="${patient.bed_number}">Autoriser la sortie</button>
+                        </td>
+                    `;
+
+                    // #############################################################################
+                    // modifier  window.location.href a pour laffichage de video 
+
+                    row.querySelector('.view-video-btn').addEventListener('click', (event) => {
+                        const bedNumber = event.target.getAttribute('data-bed-number');
+                        window.location.href = `http://192.168.180.18:5000`;
+                        
+                    });
+
+                    // #################################################################
+
+                    row.querySelector('.details-btn').addEventListener('click', (event) => {
+                        const bedNumber = event.target.getAttribute('data-bed-number');
+                        window.location.href = `details_patient.html?bed_number=${bedNumber}`;
+                    });
+                    row.querySelector('.history-btn').addEventListener('click', (event) => {
+                        const bedNumber = event.target.getAttribute('data-bed-number');
+                        const idPatient = event.target.getAttribute('data-id-patient');
+                        window.location.href = `history.html?bed_number=${bedNumber}`;
+                    });
+                    row.querySelector('.exit-btn').addEventListener('click', (event) => {
+                        const bedNumber = event.target.getAttribute('data-bed-number');
+                        const idPatient = event.target.getAttribute('data-id-patient');
+                        // Ajoutez ici la logique pour autoriser la sortie du patient
+                    });
+                });
+            } catch (error) {
+                console.error('Error fetching patients:', error);
+            }
+        }
+
+        function checkAuth() {
+            // Ajoutez ici la logique de vérification de l'authentification (par exemple, vérifier le token JWT)
+            loadPatients();
+        }
+    </script>
+</body>
+</html>

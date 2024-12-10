@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Détails du Patient Infirmier</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f8f8;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #333;
+            color: white;
+            padding: 10px 20px;
+        }
+        .container {
+            display: flex;
+            flex-direction: row;
+            margin: 20px;
+        }
+        .left-column, .right-column {
+            flex: 1;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(82, 81, 81, 0.1);
+        }
+        .left-column {
+            margin-right: 20px;
+        }
+        h2 {
+            margin-top: 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #333;
+            color: white;
+        }
+        #control-button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .sensor-table {
+            table-layout: fixed;
+            width: 100%;
+        }
+        .sensor-table th, .sensor-table td {
+            width: 50%;
+        }
+        .chart-container {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(82, 81, 81, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Détails du Patient</h1>
+        
+    </header>
+    <div class="container">
+        <section class="left-column">
+            <h2>Signes Vitaux</h2>
+            <table id="heart-rate-table" class="sensor-table">
+                <tr>
+                    <th>Fréquence Cardiaque</th>
+                    <td id="heart-rate-value">N/A</td>
+                </tr>
+            </table>
+            <table id="breath-rate-table" class="sensor-table">
+                <tr>
+                    <th>Fréquence Respiratoire</th>
+                    <td id="breath-rate-value">N/A</td>
+                </tr>
+            </table>
+            <table id="spo2-table" class="sensor-table">
+                <tr>
+                    <th>SPO2</th>
+                    <td id="spo2-value">N/A</td>
+                </tr>
+            </table>
+            <table id="temperature-table" class="sensor-table">
+                <tr>
+                    <th>Température</th>
+                    <td id="temperature-value">N/A</td>
+                </tr>
+            </table>
+            <table id="blood-pressure-table" class="sensor-table">
+                <tr>
+                    <th>Pression Artérielle </th>
+                    <td id="blood-pressure-value">N/A</td>
+                </tr>
+            </table>
+        </section>
+        <section class="right-column">
+            <div id="patient-details">
+                <h2>Informations du Patient</h2>
+                <table id="patient-table">
+                    <!-- Les données du patient seront ajoutées ici dynamiquement -->
+                </table>
+            </div>
+            
+        </section>
+    </div>
+
+    <!-- Section "Détails de l'état Prédit" -->
+    <div class="container">
+        <section class="left-column">
+            <h2>Surveillance intelligente des signes vitaux</h2>
+            <p id="health-prediction">État de santé prédit: N/A</p>
+            <p id="rules">Règles pour l'échantillon 0: N/A</p>
+        </section>
+    </div>
+
+    <!-- Section "Etat actuel de l'ECG" -->
+    <div class="chart-container">
+        <h2>Etat actuel de l'ECG</h2>
+        <table>
+            <tr>
+                <th>Etat actuel de l'ECG</th>
+                <td id="etat_actuel">N/A</td>
+            </tr>
+        </table>
+        <h2>ECG</h2>
+        <canvas id="ecgChart" width="800" height="400"></canvas>
+    </div>
+
+    <!-- Script pour les fonctionnalités -->
+    <script src="https://unpkg.com/paho-mqtt/paho-mqtt-min.js"></script>
+    <script>
+        let isRunning = false;
+        let ws = null;
+        let mqttClient = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const bedNumber = urlParams.get('bed_number');
+
+            if (bedNumber) {
+                const fetchPatientData = async () => {
+                    try {
+                        const patientResponse = await fetch(`http://localhost:3000/patients/${bedNumber}`);
+                        const patientData = await patientResponse.json();
+
+                        if (patientData) {
+                            document.getElementById('patient-table').innerHTML = `
+                                <tr>
+                                    <th>Nom</th>
+                                    <td>${patientData.patient.nom}</td>
+                                </tr>
+                                <tr>
+                                    <th>Prénom</th>
+                                    <td>${patientData.patient.prenom}</td>
+                                </tr>
+                                <tr>
+                                    <th>Date de Naissance</th>
+                                    <td>${new Date(patientData.patient.date_naissance).toLocaleDateString()}</td>
+                                </tr>
+                                <tr>
+                                    <th>Numéro de lit</th>
+                                    <td>${patientData.patient.bed_number}</td>
+                                </tr>
+                                <tr>
+                                    <th>Date d'Hospitalisation</th>
+                                    <td>${new Date(patientData.patient.date_hospitalisation).toLocaleDateString()}</td>
+                                </tr>
+                            `;
+
+                            const fetchSensorData = async () => {
+                                const [ecgData, heartRateData, breathRateData, spo2Data, temperatureData, bloodPressureData] = await Promise.all([
+                                    fetch(`http://localhost:3000/ecg?bed=${bedNumber}`).then(res => res.json()),
+                                    fetch(`http://localhost:3000/heart_rate?bed=${bedNumber}`).then(res => res.json()),
+                                    fetch(`http://localhost:3000/breath_rate?bed=${bedNumber}`).then(res => res.json()),
+                                    fetch(`http://localhost:3000/spo2?bed=${bedNumber}`).then(res => res.json()),
+                                    fetch(`http://localhost:3000/temperature?bed=${bedNumber}`).then(res => res.json()),
+                                    fetch(`http://localhost:3000/blood_pressure?bed=${bedNumber}`).then(res => res.json())
+                                    
+                                ]);
+
+                                document.getElementById('heart-rate-value').innerText = heartRateData.length > 0 ? heartRateData[0].value : 'N/A';
+                                document.getElementById('breath-rate-value').innerText = breathRateData.length > 0 ? breathRateData[0].value : 'N/A';
+                                document.getElementById('spo2-value').innerText = spo2Data.length > 0 ? spo2Data[0].value : 'N/A';
+                                document.getElementById('temperature-value').innerText = temperatureData.length > 0 ? temperatureData[0].value : 'N/A';
+                                document.getElementById('blood-pressure-value').innerText = bloodPressureData.length > 0 ? bloodPressureData[0].value : 'N/A';
+                            };
+                            fetchSensorData();
+                        connectWebSocket();
+                        connectMQTT();
+                        setInterval(fetchSensorData, 5000);
+
+                        // Fetch health prediction and rules
+                        const fetchHealthPrediction = async () => {
+                            try {
+                                const healthPredictionResponse = await fetch(`http://localhost:3000/health_prediction/${bedNumber}`);
+                                const healthPredictionData = await healthPredictionResponse.json();
+                                console.log(healthPredictionData);
+
+                                if (healthPredictionData) {
+                                    document.getElementById('health-prediction').innerText = `État de santé prédit: ${healthPredictionData.health_prediction}`;
+                                    document.getElementById('rules').innerText = `Règles pour l'échantillon 0:\n${healthPredictionData.rules.join('\n')}`;
+                                } else {
+                                    document.getElementById('health-prediction').innerText = 'État de santé prédit: N/A';
+                                    document.getElementById('rules').innerText = 'Règles pour l\'échantillon 0: N/A';
+                                }
+                            } catch (error) {
+                                console.error('Erreur lors de la récupération de la prédiction de santé:', error);
+                                document.getElementById('health-prediction').innerText = 'État de santé prédit: Erreur de chargement';
+                                document.getElementById('rules').innerText = 'Règles pour l\'échantillon 0: Erreur de chargement';
+                            }
+                        };
+
+                        fetchHealthPrediction();
+                        setInterval(fetchHealthPrediction, 10000);
+                    } else {
+                        alert('Patient non trouvé');
+                    }
+                } catch (error) {
+                    console.error('Erreur lors de la récupération des détails du patient:', error);
+                    alert('Erreur lors de la récupération des détails du patient');
+                }
+            };
+
+            fetchPatientData();
+        } else {
+            alert('Numéro de lit non fourni');
+        }
+
+        document.getElementById('add-blood-pressure-button').addEventListener('click', async () => {
+            const newSystolic = document.getElementById('new-systolic').value;
+
+            try {
+                const response = await fetch(`http://localhost:3000/blood_pressure`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        bed: bedNumber,
+                        systolic: newSystolic,
+                    })
+                });
+
+                if (response.ok) {
+                    document.getElementById('blood-pressure-value').innerText = newSystolic;
+                } else {
+                    console.error('Erreur lors de l\'ajout de la pression artérielle');
+                    alert('Erreur lors de l\'ajout de la pression artérielle');
+                }
+            } catch (error) {
+                console.error('Erreur lors de l\'ajout de la pression artérielle:', error);
+                alert('Erreur lors de l\'ajout de la pression artérielle');
+            }
+        });
+    });
+
+    // #######################################################################################################
+    // modifier url  et adapter le a Adresse IPv4. 
+
+    function connectWebSocket() {
+        const url = 'ws://192.168.83.18:1884/socket';
+        ws = new WebSocket(url);
+
+        ws.onopen = () => {
+            console.log('WebSocket connecté');
+            if (isRunning) {
+                ws.send(JSON.stringify({ action: 'start' }));
+            }
+        };
+
+        ws.onmessage = (event) => {
+            const message = JSON.parse(event.data);
+            updateSensorData(message);
+        };
+
+        ws.onclose = () => {
+            console.log('WebSocket déconnecté');
+        };
+
+        ws.onerror = (error) => {
+            console.error('Erreur WebSocket:', error);
+        };
+    }
+
+
+
+    function connectMQTT() {
+        mqttClient = new Paho.Client('localhost', 1884, `client_1`);
+
+        mqttClient.onConnectionLost = (responseObject) => {
+            console.log('Connection lost:', responseObject.errorMessage);
+        };
+
+        mqttClient.onMessageArrived = (message) => {
+            console.log('Message arrived on MQTT:', message.payloadString);
+            const sensorData = JSON.parse(message.payloadString);
+            updateSensorData(sensorData);
+        };
+
+        mqttClient.connect({
+            onSuccess: () => {
+                console.log('Connected to MQTT broker');
+                if (isRunning) {
+                    mqttClient.subscribe('vital_signs/bed1/send_data');
+                }
+            },
+            onFailure: (error) => {
+                console.error('Failed to connect to MQTT broker:', error);
+            }
+        });
+    }
+
+    function toggleControlSignal() {
+        isRunning = !isRunning;
+        document.getElementById('control-button').innerText = isRunning ? 'Arrêter' : 'Lancer';
+
+        if (isRunning) {
+            if (ws) ws.send(JSON.stringify({ action: 'start' }));
+            if (mqttClient.isConnected()) {
+                mqttClient.publish('vital_signs/bed1/send_data', '1');
+            }
+        } else {
+            if (ws) ws.send(JSON.stringify({ action: 'stop' }));
+            if (mqttClient.isConnected()) {
+                mqttClient.publish('vital_signs/bed1/send_data', '0');
+            }
+        }
+    }
+
+    // async function fetchEcgData() {
+    //     const response = await fetch('http://localhost:3000/ecg');
+    //     const data = await response.json();
+    //     return data;
+    // }
+    async function fetchEcgData(bedNumber) {
+    const response = await fetch(`http://localhost:3000/ecg?bed=${bedNumber}`);
+    if (!response.ok) {
+        throw new Error(`Erreur HTTP ! statut : ${response.status}`);
+    }
+    const data = await response.json();
+    return data;
+}
+
+    function createChart(data) {
+        const ctx = document.getElementById('ecgChart').getContext('2d');
+        const labels = data.map((_, index) => (index * 3) / 1000); // Convert to seconds
+
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'ECG Values',
+                    data: data,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1,
+                    fill: false,
+                    pointRadius: 0 // Remove points
+                }]
+            },
+            options: {
+                scales: {
+                    x: {
+                        type: 'linear',
+                        title: {
+                            display: true,
+                            text: 'Time (s)'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'ECG Value'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // window.onload = async () => {
+    //     const urlParams = new URLSearchParams(window.location.search);
+    //     const bedNumber = urlParams.get('bed_number');
+    //     const ecgData = await fetchEcgData(bedNumber);
+    //     const valeurPredite = ecgData.valeur_predite;
+    //     document.getElementById('etat_actuel').innerHTML = valeurPredite;
+
+    //     createChart(ecgData.values);
+    // };
+    window.onload = async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const bedNumber = urlParams.get('bed_number');
+
+            if (bedNumber) {
+                const ecgData = await fetchEcgData(bedNumber);
+                const valeurPredite = ecgData.valeur_predite;
+                
+                // Mappage des valeurs ECG aux phrases descriptives
+                const ecgStatusMap = {
+        0: "NSR (Rythme sinusal normal) : Rythme cardiaque normal et régulier généré par le nœud sinusal du cœur.",
+        1: "AFIB (Fibrillation auriculaire) : Rythme cardiaque irrégulier et rapide causé par des signaux électriques désorganisés dans les oreillettes du cœur.",
+        2: "AFL (Flutter auriculaire) : Rythme cardiaque irrégulier et rapide causé par des signaux électriques circulant en boucle dans les oreillettes du cœur.",
+        3: "APB (Battement auriculaire prématuré) : Battement cardiaque supplémentaire qui prend naissance dans les oreillettes du cœur.",
+        4: "Bigeminy : Rythme cardiaque où chaque battement normal est suivi d’un battement supplémentaire (extrasystole).",
+        5: "Fusion : Battement cardiaque résultant de la fusion d’un battement normal et d’un battement supplémentaire.",
+        6: "IVR (Intervalle ventriculo-rétréci) : Raccourcissement de l’intervalle entre l’onde P et l’onde QRS sur l’ECG.",
+        7: "LBBB (Bloc de branche gauche) : Blocage ou ralentissement de la conduction des signaux électriques dans la branche gauche du faisceau de His.",
+        8: "RBBB (Bloc de branche droit) : Blocage ou ralentissement de la conduction des signaux électriques dans la branche droite du faisceau de His.",
+        9: "PVC (Battement ventriculaire prématuré) : Battement cardiaque supplémentaire qui prend naissance dans les ventricules du cœur.",
+        10: "PR : Prolongation de l’intervalle PR entre l’onde P et l’onde R sur l’ECG.",
+        11: "SDHB (Bloc de branche supéro-droit) : Blocage ou ralentissement de la conduction des signaux électriques dans la branche supéro-droite du faisceau de His.",
+        12: "SVTA (Tachycardie supraventriculaire) : Rythme cardiaque rapide causé par des signaux électriques anormaux provenant des structures au-dessus des ventricules du cœur.",
+        13: "Trigeminy : Rythme cardiaque où deux battements normaux sont suivis d’un battement supplémentaire (extrasystole).",
+        14: "VFL (Flutter ventriculaire) : Rythme cardiaque rapide et irrégulier causé par des signaux électriques circulant en boucle dans les ventricules du cœur.",
+        15: "VT (Tachycardie ventriculaire) : Rythme cardiaque rapide causé par des signaux électriques anormaux provenant des ventricules du cœur.",
+        16: "WPW (Syndrome de Wolff-Parkinson-White) : Maladie cardiaque congénitale caractérisée par une connexion électrique supplémentaire entre les oreillettes et les ventricules du cœur."
+  };
+
+                const ecgStatus = ecgStatusMap[valeurPredite] || 'N/A';
+                document.getElementById('etat_actuel').innerText = ecgStatus;
+
+                createChart(ecgData.values);
+            } else {
+                console.error('Numéro de lit manquant dans les paramètres de l\'URL.');
+            }
+        };
+</script>
+</body>
+</html>

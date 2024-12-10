@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historique du Patient</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f8f8f8;
+        }
+        h1 {
+            text-align: center;
+        }
+        .chart-container {
+            width: 80%;
+            margin: 0 auto 40px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(82, 81, 81, 0.1);
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Historique des Données du Patient</h1>
+    <div class="chart-container">
+        <canvas id="heartRateChart"></canvas>
+    </div>
+    <div class="chart-container">
+        <canvas id="breathRateChart"></canvas>
+    </div>
+    <div class="chart-container">
+        <canvas id="spo2Chart"></canvas>
+    </div>
+    <div class="chart-container">
+        <canvas id="temperatureChart"></canvas>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const bedNumber = urlParams.get('bed_number');
+            const serverUrl = "http://localhost:3000"; // Le port est défini ici
+
+            const [heartRateData, breathRateData, spo2Data, temperatureData] = await Promise.all([
+                fetch(`${serverUrl}/heart_rate7d?bed=${bedNumber}`).then(res => res.json()),
+                fetch(`${serverUrl}/breath_rate7d?bed=${bedNumber}`).then(res => res.json()),
+                fetch(`${serverUrl}/spo27d?bed=${bedNumber}`).then(res => res.json()),
+                fetch(`${serverUrl}/temperature7d?bed=${bedNumber}`).then(res => res.json())
+            ]);
+
+            const formatDateTime = timestamp => new Date(timestamp).toLocaleDateString('fr-FR', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            const createChart = (ctx, label, data, color) => {
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.map(d => formatDateTime(d.timestamp)),
+                        datasets: [{
+                            label: label,
+                            data: data.map(d => d.value),
+                            borderColor: color,
+                            fill: false,
+                            tension: 0.1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Date et Heure'
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: label
+                                }
+                            }
+                        }
+                    }
+                });
+            };
+
+            createChart(document.getElementById('heartRateChart').getContext('2d'), 'Fréquence Cardiaque', heartRateData, 'rgba(255, 99, 132, 1)');
+            createChart(document.getElementById('breathRateChart').getContext('2d'), 'Fréquence Respiratoire', breathRateData, 'rgba(54, 162, 235, 1)');
+            createChart(document.getElementById('spo2Chart').getContext('2d'), 'SpO2', spo2Data, 'rgba(255, 206, 86, 1)');
+            createChart(document.getElementById('temperatureChart').getContext('2d'), 'Température', temperatureData, 'rgba(153, 102, 255, 1)');
+        });
+    </script>
+</body>
+</html>
