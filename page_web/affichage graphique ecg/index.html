@@ -1,0 +1,107 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ECG Chart</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>ECG Data Chart</h1>
+    <canvas id="ecgChart" width="800" height="400"></canvas>
+    <script>
+        async function fetchEcgData() {
+            const response = await fetch('http://localhost:3000/ecg');
+            const data = await response.json();
+            return data;
+        }
+
+        function createChart(data) {
+            const ctx = document.getElementById('ecgChart').getContext('2d');
+            const labels = data.map((_, index) => (index * 3) / 1000); // Convert to seconds
+
+            const chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'ECG Values',
+                        data: data,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1,
+                        fill: false,
+                        pointRadius: 0 // Remove points
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            title: {
+                                display: true,
+                                text: 'Time (s)'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'ECG Value'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        window.onload = async () => {
+            const ecgData = await fetchEcgData();
+            createChart(ecgData);
+        };
+    </script>
+</body>
+</html> -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Blood Pressure Values</title>
+</head>
+<body>
+    <h2>Add Blood Pressure Values</h2>
+    <form id="bloodPressureForm">
+        <label for="bedInput">Bed Number:</label>
+        <input type="number" id="bedInput" name="bed" required><br><br>
+
+        <label for="systolicInput">Systolic Value:</label>
+        <input type="number" id="systolicInput" name="systolic" required><br><br>
+
+        <button type="submit">Add Systolic Value</button>
+    </form>
+
+
+    <script>
+        document.getElementById('bloodPressureForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const bed = document.getElementById('bedInput').value;
+            const systolic = document.getElementById('systolicInput').value;
+
+            try {
+                const response = await fetch('http://localhost:3000/blood_pressure_s', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ bed, systolic })
+                });
+                const result = await response.text();
+                alert(result);
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+
+        
+    </script>
+</body>
+</html>
